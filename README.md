@@ -1,140 +1,89 @@
-# Enterprise Data Governance Portal
+# Data Governance Portal
 
-Professional React + FastAPI application for Databricks Unity Catalog governance.
+Enterprise data governance portal for Databricks Unity Catalog with React frontend and FastAPI backend.
 
-## 🏗️ Architecture
+## Quick Start
 
-- **Frontend**: React 18 with Fluent UI design system
-- **Backend**: FastAPI + Databricks SQL Connector
-- **Data Source**: Unity Catalog (system.information_schema)
-- **Deployment**: Databricks Apps
-
-## 🚀 Quick Start
-
-### Option 1: Automated Setup
+### Local Development
 
 ```bash
-./start.sh
-```
-
-### Option 2: Manual Setup
-
-1. **Configure Environment**
-
-```bash
-cp .env.example .env
-# Edit .env with your Databricks credentials
-```
-
-2. **Install Dependencies**
-
-```bash
-# Backend
+# Install Python dependencies
 pip install -r requirements.txt
 
-# Frontend
+# Build frontend
 cd frontend
 npm install
 npm run build
 cd ..
+
+# Run application
+python app.py
 ```
 
-3. **Run Application**
+Access: http://localhost:8000
+
+### Deploy to Databricks Apps
+
+1. **Configure secrets in Databricks:**
 
 ```bash
-# Option A: Using script
-./run_local.sh
-
-# Option B: Direct
-python3 app.py
+databricks secrets create-scope databricks
+databricks secrets put-secret databricks server_hostname
+databricks secrets put-secret databricks http_path
+databricks secrets put-secret databricks token
 ```
 
-4. **Access Application**
-
-- Frontend: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-- Health Check: http://localhost:8000/api/health
-
-## 📦 Deploy to Databricks Apps
+2. **Deploy:**
 
 ```bash
-# Validate configuration
 databricks bundle validate
-
-# Deploy to development
 databricks bundle deploy -t dev
-
-# Deploy to production
-databricks bundle deploy -t prod
 ```
 
-See [DEPLOY.md](DEPLOY.md) for detailed deployment instructions.
+3. **Check logs:**
 
-## 🔌 API Endpoints
+```bash
+databricks apps logs data-governance-portal
+```
 
-- `GET /api/health` - Health check and connection status
-- `GET /api/inventory` - Get all tables with quality metrics
-- `GET /api/lineage/{catalog}/{schema}/{table}` - Get table column metadata
-
-## ✨ Features
-
-- ✅ Real-time Unity Catalog metadata
-- ✅ Documentation quality scoring
-- ✅ Interactive table and column explorer
-- ✅ Quality insights dashboard
-- ✅ Fluent UI design system
-- ✅ Responsive layout
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 .
 ├── app.py                 # Main FastAPI application
+├── app.yaml              # Databricks Apps runtime config
 ├── backend/
-│   └── main.py           # API routes and business logic
+│   └── main.py          # API routes
 ├── frontend/
-│   ├── src/
-│   │   ├── components/   # React components
-│   │   ├── pages/        # Page components
-│   │   └── App.js        # Main React app
-│   └── package.json
-├── databricks.yml        # Databricks Apps configuration
-├── requirements.txt      # Python dependencies
-├── validate.py          # Setup validation script
-└── start.sh             # Quick start script
+│   ├── src/             # React source
+│   └── build/           # React production build
+├── databricks.yml       # Databricks bundle config
+└── requirements.txt     # Python dependencies
 ```
 
-## 🔧 Development
+## API Endpoints
 
-Run frontend and backend separately for hot reload:
+- `GET /` - Frontend or API info
+- `GET /api/health` - Health check
+- `GET /api/inventory` - Unity Catalog tables
+- `GET /api/lineage/{catalog}/{schema}/{table}` - Table columns
+- `GET /docs` - API documentation
 
-```bash
-# Terminal 1 - Backend (port 8000)
-python backend/main.py
+## Environment Variables
 
-# Terminal 2 - Frontend (port 3000)
-cd frontend
-npm start
+Required in `.env` for local development:
+
+```
+DATABRICKS_SERVER_HOSTNAME=your-workspace.cloud.databricks.com
+DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/your-warehouse-id
+DATABRICKS_TOKEN=your-token
 ```
 
-## 📝 Environment Variables
+For Databricks Apps, configure via secrets in `app.yaml`.
 
-Required in `.env`:
+## Tech Stack
 
-- `DATABRICKS_SERVER_HOSTNAME` - Your workspace URL
-- `DATABRICKS_HTTP_PATH` - SQL Warehouse HTTP path
-- `DATABRICKS_TOKEN` - Personal access token
-
-## 📚 Documentation
-
-- [QUICKSTART.md](QUICKSTART.md) - Get started in 5 minutes
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Technical architecture details
-- [DEPLOY.md](DEPLOY.md) - Complete deployment guide
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues and solutions
-- [CHECKLIST.md](CHECKLIST.md) - Pre-deployment checklist
-- [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) - Project overview
-- [DIAGRAM.txt](DIAGRAM.txt) - Visual architecture diagram
-
-## 🐛 Troubleshooting
-
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions to common issues.
+- **Frontend**: React 18, Fluent UI design
+- **Backend**: FastAPI, Databricks SQL Connector
+- **Data**: Unity Catalog (system.information_schema)
+- **Deploy**: Databricks Apps
