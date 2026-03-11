@@ -6,21 +6,40 @@ Enterprise data governance portal for Databricks Unity Catalog with React fronte
 
 ### Local Development
 
+**Option 1: Using the script (recommended)**
+
 ```bash
-# Install Python dependencies
+# 1. Configure environment
+cp .env.example .env
+# Edit .env with your Databricks credentials
+
+# 2. Run (installs deps and builds frontend automatically)
+./run_local.sh
+```
+
+**Option 2: Manual steps**
+
+```bash
+# 1. Install Python dependencies
 pip install -r requirements.txt
 
-# Build frontend
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your Databricks credentials
+
+# 3. Build frontend
 cd frontend
 npm install
 npm run build
 cd ..
 
-# Run application
+# 4. Run application
 python app.py
 ```
 
 Access: http://localhost:8000
+
+See [LOCAL_TEST.md](LOCAL_TEST.md) for detailed testing guide.
 
 ### Deploy to Databricks Apps
 
