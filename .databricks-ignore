@@ -1,0 +1,12 @@
+# Databricks ignore file
+# Files and directories to exclude from deployment
+
+node_modules/
+.git/
+.vscode/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+*.log
+.databricks/
