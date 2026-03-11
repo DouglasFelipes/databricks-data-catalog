@@ -1,52 +1,49 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, PartialTheme } from '@fluentui/react';
-import Layout from './components/Layout';
+import React, { useState, useEffect } from 'react';
 import Dashboard from './pages/Dashboard';
 import Explorer from './pages/Explorer';
 import Quality from './pages/Quality';
-
-// Microsoft 365 Theme
-const theme: PartialTheme = {
-  palette: {
-    themePrimary: '#0078d4',
-    themeLighterAlt: '#eff6fc',
-    themeLighter: '#deecf9',
-    themeLight: '#c7e0f4',
-    themeTertiary: '#71afe5',
-    themeSecondary: '#2b88d8',
-    themeDarkAlt: '#106ebe',
-    themeDark: '#005a9e',
-    themeDarker: '#004578',
-    neutralLighterAlt: '#faf9f8',
-    neutralLighter: '#f3f2f1',
-    neutralLight: '#edebe9',
-    neutralQuaternaryAlt: '#e1dfdd',
-    neutralQuaternary: '#d0d0d0',
-    neutralTertiaryAlt: '#c8c6c4',
-    neutralTertiary: '#a19f9d',
-    neutralSecondary: '#605e5c',
-    neutralPrimaryAlt: '#3b3a39',
-    neutralPrimary: '#323130',
-    neutralDark: '#201f1e',
-    black: '#000000',
-    white: '#ffffff',
-  }
-};
+import Layout from './components/Layout';
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [inventory, setInventory] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
+  const fetchInventory = async () => {
+    try {
+      const response = await fetch('/api/inventory');
+      const data = await response.json();
+      setInventory(data);
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderPage = () => {
+    if (loading) return <div className="loading">Loading...</div>;
+    
+    switch (currentPage) {
+      case 'dashboard':
+        return <Dashboard inventory={inventory} />;
+      case 'explorer':
+        return <Explorer inventory={inventory} />;
+      case 'quality':
+        return <Quality inventory={inventory} />;
+      default:
+        return <Dashboard inventory={inventory} />;
+    }
+  };
+
   return (
-    <ThemeProvider theme={theme}>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/explorer" element={<Explorer />} />
-            <Route path="/quality" element={<Quality />} />
-          </Routes>
-        </Layout>
-      </Router>
-    </ThemeProvider>
+    <Layout currentPage={currentPage} setCurrentPage={setCurrentPage}>
+      {renderPage()}
+    </Layout>
   );
 }
 

@@ -1,158 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { Stack, Text, Dropdown, Spinner, MessageBar, MessageBarType, mergeStyleSets } from '@fluentui/react';
-import axios from 'axios';
+import React, { useState } from 'react';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
-const styles = mergeStyleSets({
-  card: {
-    background: '#ffffff',
-    borderRadius: '8px',
-    padding: '24px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-    border: '1px solid #edebe9'
-  }
-});
-
-const Explorer = () => {
-  const [catalogs, setCatalogs] = useState([]);
-  const [schemas, setSchemas] = useState([]);
-  const [tables, setTables] = useState([]);
-  const [columns, setColumns] = useState([]);
-  
-  const [selectedCatalog, setSelectedCatalog] = useState(null);
-  const [selectedSchema, setSelectedSchema] = useState(null);
+function Explorer({ inventory }) {
   const [selectedTable, setSelectedTable] = useState(null);
-  
-  const [loading, setLoading] = useState(false);
+  const [columns, setColumns] = useState([]);
 
-  useEffect(() => {
-    fetchCatalogs();
-  }, []);
-
-  const fetchCatalogs = async () => {
+  const fetchColumns = async (catalog, schema, table) => {
     try {
-      const response = await axios.get(`${API_BASE}/api/inventory`);
-      setCatalogs(response.data.catalog_list.map(c => ({ key: c, text: c })));
-    } catch (err) {
-      console.error(err);
+      const response = await fetch(`/api/lineage/${catalog}/${schema}/${table}`);
+      const data = await response.json();
+      setColumns(data.column_list);
+      setSelectedTable({ catalog, schema, table });
+    } catch (error) {
+      console.error('Error fetching columns:', error);
     }
   };
 
-  const handleCatalogChange = async (event, option) => {
-    setSelectedCatalog(option.key);
-    setSelectedSchema(null);
-    setSelectedTable(null);
-    setSchemas([]);
-    setTables([]);
-    setColumns([]);
-    
-    try {
-      const response = await axios.get(`${API_BASE}/api/catalog/${option.key}/schema`);
-      setSchemas(response.data.schema_list.map(s => ({ key: s, text: s })));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSchemaChange = async (event, option) => {
-    setSelectedSchema(option.key);
-    setSelectedTable(null);
-    setTables([]);
-    setColumns([]);
-    
-    try {
-      const response = await axios.get(`${API_BASE}/api/catalog/${selectedCatalog}/schema/${option.key}/table`);
-      setTables(response.data.table_list.map(t => ({ key: t.table_name, text: t.table_name })));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleTableChange = async (event, option) => {
-    setSelectedTable(option.key);
-    setLoading(true);
-    
-    try {
-      const response = await axios.get(`${API_BASE}/api/lineage/${selectedCatalog}/${selectedSchema}/${option.key}`);
-      setColumns(response.data.column_list);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!inventory) return <div>Loading...</div>;
 
   return (
-    <Stack tokens={{ childrenGap: 24 }}>
-      <div>
-        <Text variant="xxLarge" styles={{ root: { fontWeight: '600', marginBottom: '8px' } }}>
-          Explorer
-        </Text>
-        <Text variant="medium" styles={{ root: { color: '#605e5c' } }}>
-          Navigate through Catalog → Schema → Table
-        </Text>
+    <div className="explorer">
+      <header className="page-header">
+        <h1>Data Explorer</h1>
+        <p>Explore tables and schemas</p>
+      </header>
+
+      <div className="card">
+        <h3>📊 Tables</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Catalog</th>
+              <th>Schema</th>
+              <th>Table</th>
+              <th>Type</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inventory.table_list.slice(0, 50).map((table, idx) => (
+              <tr key={idx}>
+                <td>{table.catalog}</td>
+                <td>{table.schema}</td>
+                <td>{table.table_name}</td>
+                <td>{table.table_type}</td>
+                <td>
+                  <button onClick={() => fetchColumns(table.catalog, table.schema, table.table_name)}>
+                    View Columns
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      <div className={styles.card}>
-        <Stack horizontal tokens={{ childrenGap: 16 }}>
-          <Dropdown
-            placeholder="Select Catalog"
-            label="📁 Catalog"
-            options={catalogs}
-            onChange={handleCatalogChange}
-            styles={{ root: { width: 200 } }}
-          />
-          <Dropdown
-            placeholder="Select Schema"
-            label="📂 Schema"
-            options={schemas}
-            onChange={handleSchemaChange}
-            disabled={!selectedCatalog}
-            styles={{ root: { width: 200 } }}
-          />
-          <Dropdown
-            placeholder="Select Table"
-            label="📄 Table"
-            options={tables}
-            onChange={handleTableChange}
-            disabled={!selectedSchema}
-            styles={{ root: { width: 200 } }}
-          />
-        </Stack>
-      </div>
-
-      {loading && <Spinner label="Loading columns..." />}
-
-      {columns.length > 0 && (
-        <div className={styles.card}>
-          <Text variant="xLarge" styles={{ root: { marginBottom: '16px', fontWeight: '600' } }}>
-            📋 Columns
-          </Text>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      {selectedTable && (
+        <div className="card">
+          <h3>📋 Columns: {selectedTable.catalog}.{selectedTable.schema}.{selectedTable.table}</h3>
+          <table>
             <thead>
-              <tr style={{ borderBottom: '2px solid #edebe9', background: '#faf9f8' }}>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Column</th>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Type</th>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Nullable</th>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Description</th>
+              <tr>
+                <th>Column</th>
+                <th>Type</th>
+                <th>Nullable</th>
+                <th>Description</th>
               </tr>
             </thead>
             <tbody>
               {columns.map((col, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid #edebe9' }}>
-                  <td style={{ padding: '12px' }}>{col.column_name}</td>
-                  <td style={{ padding: '12px' }}>{col.data_type}</td>
-                  <td style={{ padding: '12px' }}>{col.is_nullable === 'YES' ? '✅' : '❌'}</td>
-                  <td style={{ padding: '12px' }}>{col.description || '-'}</td>
+                <tr key={idx}>
+                  <td>{col.column_name}</td>
+                  <td>{col.data_type}</td>
+                  <td>{col.is_nullable}</td>
+                  <td>{col.description || '-'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
-    </Stack>
+    </div>
   );
-};
+}
 
 export default Explorer;
