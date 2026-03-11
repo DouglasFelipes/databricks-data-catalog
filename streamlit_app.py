@@ -1,6 +1,13 @@
 import streamlit as st
-from databricks import sql
 import os
+import pandas as pd
+
+# Tentar importar databricks-sql-connector
+try:
+    from databricks import sql
+    DATABRICKS_AVAILABLE = True
+except ImportError:
+    DATABRICKS_AVAILABLE = False
 
 # Configuração da página
 st.set_page_config(
@@ -54,6 +61,9 @@ page = st.sidebar.radio("Navegação", ["Home", "Explorer", "Search", "Governanc
 
 # Função para conectar ao Databricks
 def get_databricks_connection():
+    if not DATABRICKS_AVAILABLE:
+        return None
+    
     try:
         connection = sql.connect(
             server_hostname=os.getenv("DATABRICKS_SERVER_HOSTNAME"),
@@ -65,32 +75,68 @@ def get_databricks_connection():
         st.error(f"Erro ao conectar: {str(e)}")
         return None
 
+# Função para buscar KPIs do Unity Catalog
+def fetch_kpis():
+    conn = get_databricks_connection()
+    if not conn:
+        return {"total_tables": 0, "tables_without_desc": 0, "data_volume": "0 TB"}
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Total de tabelas
+        cursor.execute("SELECT COUNT(*) as total FROM system.information_schema.tables")
+        total_tables = cursor.fetchone()[0]
+        
+        # Tabelas sem descrição
+        cursor.execute("""
+            SELECT COUNT(*) as total 
+            FROM system.information_schema.tables 
+            WHERE comment IS NULL OR comment = ''
+        """)
+        tables_without_desc = cursor.fetchone()[0]
+        
+        cursor.close()
+        conn.close()
+        
+        return {
+            "total_tables": total_tables,
+            "tables_without_desc": tables_without_desc,
+            "data_volume": "N/A"
+        }
+    except Exception as e:
+        st.warning(f"Não foi possível buscar KPIs: {str(e)}")
+        return {"total_tables": 0, "tables_without_desc": 0, "data_volume": "0 TB"}
+
 # HOME PAGE
 if page == "Home":
     st.markdown('<div class="main-header">Dashboard</div>', unsafe_allow_html=True)
     
+    # Buscar KPIs
+    kpis = fetch_kpis()
+    
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown("""
+        st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-value">0</div>
+            <div class="kpi-value">{kpis['total_tables']}</div>
             <div class="kpi-label">Total de Tabelas</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("""
+        st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-value">0</div>
+            <div class="kpi-value">{kpis['tables_without_desc']}</div>
             <div class="kpi-label">Tabelas sem Descrição</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
-        st.markdown("""
+        st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-value">0 TB</div>
+            <div class="kpi-value">{kpis['data_volume']}</div>
             <div class="kpi-label">Volume de Dados</div>
         </div>
         """, unsafe_allow_html=True)
