@@ -1,0 +1,18 @@
+# Databricks Apps Configuration
+# This file tells Databricks how to run the application
+
+# Command to start the application
+# Since we have both package.json (frontend) and Python (backend),
+# we need to specify the Python command explicitly
+command: ["python", "app.py"]
+
+# Environment variables
+env:
+  - name: PORT
+    value: "8000"
+  - name: DATABRICKS_SERVER_HOSTNAME
+    value: "{{secrets/databricks/server_hostname}}"
+  - name: DATABRICKS_HTTP_PATH
+    value: "{{secrets/databricks/http_path}}"
+  - name: DATABRICKS_TOKEN
+    value: "{{secrets/databricks/token}}"

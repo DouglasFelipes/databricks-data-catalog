@@ -7,46 +7,16 @@ resources:
       name: data-governance-portal
       description: "Enterprise Data Governance Portal - React + FastAPI + Unity Catalog"
 
-      # Application configuration
-      config:
-        command:
-          - "python"
-          - "app.py"
-
-        env:
-          - name: DATABRICKS_SERVER_HOSTNAME
-            value: ${var.databricks_host}
-          - name: DATABRICKS_HTTP_PATH
-            value: ${var.databricks_http_path}
-          - name: DATABRICKS_TOKEN
-            value: ${var.databricks_token}
-
 targets:
   dev:
     mode: development
     workspace:
       host: ${DATABRICKS_HOST}
 
-    variables:
-      databricks_host:
-        default: ${DATABRICKS_HOST}
-      databricks_http_path:
-        default: ${DATABRICKS_HTTP_PATH}
-      databricks_token:
-        default: ${DATABRICKS_TOKEN}
-
   prod:
     mode: production
     workspace:
       host: ${DATABRICKS_HOST}
-
-    variables:
-      databricks_host:
-        default: ${DATABRICKS_HOST}
-      databricks_http_path:
-        default: ${DATABRICKS_HTTP_PATH}
-      databricks_token:
-        default: ${DATABRICKS_TOKEN}
 
     permissions:
       - level: CAN_MANAGE
