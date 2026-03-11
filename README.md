@@ -24,32 +24,44 @@ Access: http://localhost:8000
 
 ### Deploy to Databricks Apps
 
-**Important**: Databricks Apps will automatically build the frontend during deployment because we have `package.json` in the root.
-
 1. **Configure secrets in Databricks:**
 
 ```bash
+# Create secret scope
 databricks secrets create-scope databricks
+
+# Add secrets (you'll be prompted to enter values)
 databricks secrets put-secret databricks server_hostname
+# Enter: your-workspace.cloud.databricks.com
+
 databricks secrets put-secret databricks http_path
+# Enter: /sql/1.0/warehouses/your-warehouse-id
+
 databricks secrets put-secret databricks token
+# Enter: your-personal-access-token
 ```
 
-2. **Deploy:**
+2. **Verify secrets:**
+
+```bash
+databricks secrets list-secrets databricks
+```
+
+3. **Deploy:**
 
 ```bash
 databricks bundle validate
 databricks bundle deploy -t dev
 ```
 
-The deployment process will:
+Databricks will automatically:
 
-- Run `npm install` (installs frontend dependencies)
-- Run `npm run build` (builds React app to `frontend/build/`)
-- Run `pip install -r requirements.txt` (installs Python dependencies)
-- Run `python app.py` (starts the application)
+- Run `npm install` and `npm run build` (builds frontend)
+- Run `pip install -r requirements.txt` (installs Python deps)
+- Load secrets and set as environment variables
+- Run `python app.py` (starts the app)
 
-3. **Check logs:**
+4. **Check logs:**
 
 ```bash
 databricks apps logs data-governance-portal
@@ -88,7 +100,7 @@ DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/your-warehouse-id
 DATABRICKS_TOKEN=your-token
 ```
 
-For Databricks Apps, configure via secrets in `app.yaml`.
+For Databricks Apps, configure via secrets in `databricks.yml`.
 
 ## Tech Stack
 

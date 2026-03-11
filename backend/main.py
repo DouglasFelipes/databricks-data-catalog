@@ -24,11 +24,27 @@ def get_databricks_connection():
     if not DATABRICKS_AVAILABLE:
         raise HTTPException(status_code=500, detail="Databricks connector not available")
     
+    # Get credentials from environment
+    server_hostname = os.getenv("DATABRICKS_SERVER_HOSTNAME")
+    http_path = os.getenv("DATABRICKS_HTTP_PATH")
+    token = os.getenv("DATABRICKS_TOKEN")
+    
+    # Validate credentials
+    if not all([server_hostname, http_path, token]):
+        missing = []
+        if not server_hostname: missing.append("DATABRICKS_SERVER_HOSTNAME")
+        if not http_path: missing.append("DATABRICKS_HTTP_PATH")
+        if not token: missing.append("DATABRICKS_TOKEN")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Missing environment variables: {', '.join(missing)}"
+        )
+    
     try:
         connection = sql.connect(
-            server_hostname=os.getenv("DATABRICKS_SERVER_HOSTNAME"),
-            http_path=os.getenv("DATABRICKS_HTTP_PATH"),
-            access_token=os.getenv("DATABRICKS_TOKEN")
+            server_hostname=server_hostname,
+            http_path=http_path,
+            access_token=token
         )
         return connection
     except Exception as e:

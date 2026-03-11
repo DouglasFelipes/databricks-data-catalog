@@ -7,6 +7,16 @@ resources:
       name: data-governance-portal
       description: "Enterprise Data Governance Portal - React + FastAPI + Unity Catalog"
 
+      # Environment variables from Databricks secrets
+      config:
+        env:
+          - name: DATABRICKS_SERVER_HOSTNAME
+            valueFrom: "{{secrets/databricks/server_hostname}}"
+          - name: DATABRICKS_HTTP_PATH
+            valueFrom: "{{secrets/databricks/http_path}}"
+          - name: DATABRICKS_TOKEN
+            valueFrom: "{{secrets/databricks/token}}"
+
 targets:
   dev:
     mode: development
