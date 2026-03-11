@@ -29,31 +29,31 @@ cp .env.example .env
 2. **Install Dependencies**
 
 ```bash
+# Backend
 pip install -r requirements.txt
-cd frontend && npm install && cd ..
-```
 
-3. **Build Frontend**
-
-```bash
+# Frontend
 cd frontend
+npm install
 npm run build
 cd ..
 ```
 
-4. **Validate Setup**
+3. **Run Application**
 
 ```bash
-python validate.py
+# Option A: Using script
+./run_local.sh
+
+# Option B: Direct
+python3 app.py
 ```
 
-5. **Run Application**
+4. **Access Application**
 
-```bash
-python app.py
-```
-
-Access: http://localhost:8000
+- Frontend: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+- Health Check: http://localhost:8000/api/health
 
 ## 📦 Deploy to Databricks Apps
 
