@@ -65,11 +65,23 @@ def get_databricks_connection():
         return None
     
     try:
-        connection = sql.connect(
-            server_hostname=os.getenv("DATABRICKS_SERVER_HOSTNAME"),
-            http_path=os.getenv("DATABRICKS_HTTP_PATH"),
-            access_token=os.getenv("DATABRICKS_TOKEN")
-        )
+        # Usar OAuth M2M se disponível (Databricks Apps)
+        if os.getenv("DATABRICKS_CLIENT_ID") and os.getenv("DATABRICKS_CLIENT_SECRET"):
+            connection = sql.connect(
+                server_hostname=os.getenv("DATABRICKS_HOST"),
+                http_path=os.getenv("DATABRICKS_HTTP_PATH", "/sql/1.0/warehouses/"),
+                credentials_provider=lambda: (
+                    os.getenv("DATABRICKS_CLIENT_ID"),
+                    os.getenv("DATABRICKS_CLIENT_SECRET")
+                )
+            )
+        else:
+            # Fallback para token
+            connection = sql.connect(
+                server_hostname=os.getenv("DATABRICKS_SERVER_HOSTNAME"),
+                http_path=os.getenv("DATABRICKS_HTTP_PATH"),
+                access_token=os.getenv("DATABRICKS_TOKEN")
+            )
         return connection
     except Exception as e:
         st.error(f"Erro ao conectar: {str(e)}")
