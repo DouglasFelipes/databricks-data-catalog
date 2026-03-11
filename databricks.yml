@@ -6,9 +6,9 @@ workspace:
 
 resources:
   apps:
-    data_governance_portal:
-      name: enterprise-data-governance-portal
-      description: "Enterprise Data Governance Portal with Fluent UI"
+    governance_portal:
+      name: data-governance-portal
+      description: "Enterprise Data Governance Portal - React + FastAPI + Unity Catalog"
 
 permissions:
   - level: CAN_USE
