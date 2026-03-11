@@ -5,9 +5,27 @@ FastAPI Backend + React Frontend
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import os
 
-app = FastAPI(title="Data Governance Portal")
+# Import routes from backend
+from backend.main import health_check, get_inventory, get_lineage
+
+app = FastAPI(title="Data Governance Portal", version="1.0.0")
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# API Routes
+app.get("/api/health")(health_check)
+app.get("/api/inventory")(get_inventory)
+app.get("/api/lineage/{catalog}/{schema}/{table}")(get_lineage)
 
 # Serve React build
 if os.path.exists("frontend/build"):
@@ -16,10 +34,14 @@ if os.path.exists("frontend/build"):
     @app.get("/")
     async def serve_frontend():
         return FileResponse("frontend/build/index.html")
-
-# Mount API routes
-from backend.main import app as api_app
-app.mount("/api", api_app)
+else:
+    @app.get("/")
+    async def root():
+        return {
+            "message": "Data Governance Portal API",
+            "version": "1.0.0",
+            "note": "Frontend not built. Run: cd frontend && npm run build"
+        }
 
 if __name__ == "__main__":
     import uvicorn

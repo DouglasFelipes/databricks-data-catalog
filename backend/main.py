@@ -2,8 +2,7 @@
 Enterprise Data Governance Portal - Backend API
 FastAPI + Databricks SQL Connector
 """
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import os
@@ -19,16 +18,6 @@ except ImportError:
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-app = FastAPI(title="Data Governance API", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 def get_databricks_connection():
     """Get Databricks SQL connection"""
@@ -81,7 +70,6 @@ class HealthResponse(BaseModel):
     timestamp: str
     databricks_connected: bool
 
-@app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint"""
     databricks_connected = False
@@ -98,7 +86,6 @@ async def health_check():
         databricks_connected=databricks_connected
     )
 
-@app.get("/inventory")
 async def get_inventory():
     """Get Unity Catalog inventory"""
     try:
@@ -129,7 +116,6 @@ async def get_inventory():
         logger.error(f"Inventory error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/lineage/{catalog}/{schema}/{table}")
 async def get_lineage(catalog: str, schema: str, table: str):
     """Get table column metadata"""
     try:
@@ -145,10 +131,5 @@ async def get_lineage(catalog: str, schema: str, table: str):
         logger.error(f"Lineage error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/")
 async def root():
     return {"message": "Data Governance API", "version": "1.0.0"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
