@@ -4,17 +4,7 @@ command:
     "run",
     "streamlit_app.py",
     "--server.port",
-    "8080",
-    "--server.enableCORS",
-    "false",
+    "8000",
+    "--server.address",
+    "0.0.0.0",
   ]
-
-env:
-  - name: DATABRICKS_HOST
-    value: ${DATABRICKS_HOST}
-  - name: DATABRICKS_SERVER_HOSTNAME
-    value: ${DATABRICKS_SERVER_HOSTNAME}
-  - name: DATABRICKS_HTTP_PATH
-    value: ${DATABRICKS_HTTP_PATH}
-  - name: DATABRICKS_TOKEN
-    value: ${DATABRICKS_TOKEN}
