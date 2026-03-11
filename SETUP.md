@@ -19,6 +19,13 @@ Access: http://localhost:8000
 
 ## Databricks Deploy
 
+**Note**: With `package.json` in the root, Databricks Apps automatically:
+
+- Runs `npm install` (installs frontend deps)
+- Runs `npm run build` (builds React to `frontend/build/`)
+- Runs `pip install -r requirements.txt`
+- Runs `python app.py`
+
 ```bash
 # 1. Configure secrets
 databricks secrets create-scope databricks
@@ -30,6 +37,8 @@ databricks secrets put-secret databricks token
 databricks bundle validate
 databricks bundle deploy -t dev
 
-# 3. Check
+# 3. Check logs
 databricks apps logs data-governance-portal
 ```
+
+The frontend will be automatically built during deployment!

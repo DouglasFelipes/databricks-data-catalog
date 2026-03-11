@@ -1,0 +1,10 @@
+{
+  "name": "data-governance-portal",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install": "cd frontend && npm install",
+    "build": "cd frontend && npm run build",
+    "start": "python app.py"
+  }
+}
