@@ -1,0 +1,32 @@
+bundle:
+  name: enterprise-data-governance-portal
+
+workspace:
+  host: ${DATABRICKS_HOST}
+
+resources:
+  apps:
+    data_governance_portal:
+      name: enterprise-data-governance-portal
+      description: "Enterprise Data Governance Portal with Fluent UI"
+
+permissions:
+  - level: CAN_USE
+    service_principal_name: "app-service-principal"
+
+targets:
+  dev:
+    mode: development
+    workspace:
+      host: ${DATABRICKS_HOST}
+
+  prod:
+    mode: production
+    workspace:
+      host: ${DATABRICKS_HOST}
+      root_path: /Workspace/apps/data-governance-portal
+    permissions:
+      - level: CAN_MANAGE
+        group_name: "data-engineers"
+      - level: CAN_USE
+        group_name: "data-analysts"
